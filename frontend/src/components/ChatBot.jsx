@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import CustomerCard from '@/components/CustomerCard'
 
 const SESSION_KEY = 'zap_session_id'
-const API_BASE = import.meta.env.VITE_API_URL || 'https://zap-onboarding-bot-production.up.railway.app'
+const API_BASE = import.meta.env.VITE_API_URL || ''
 
 function getOrCreateSessionId() {
   let id = sessionStorage.getItem(SESSION_KEY)

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-const API_BASE = import.meta.env.VITE_API_URL || 'https://zap-onboarding-bot-production.up.railway.app'
+const API_BASE = import.meta.env.VITE_API_URL || ''
 
 const COLUMNS = [
   { key: 'id',            label: '#' },

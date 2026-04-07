@@ -6,6 +6,8 @@ from typing import Any, Optional
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from database import init_db, save_customer, get_all_customers, delete_customer
@@ -125,3 +127,13 @@ async def admin_delete_customer(customer_id: int):
 @app.get("/health")
 async def health():
     return {"status": "ok"}
+
+
+# Serve React frontend — must come after all API routes
+_frontend_dist = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
+if os.path.isdir(_frontend_dist):
+    app.mount("/assets", StaticFiles(directory=os.path.join(_frontend_dist, "assets")), name="assets")
+
+    @app.get("/{full_path:path}")
+    async def serve_frontend(full_path: str):
+        return FileResponse(os.path.join(_frontend_dist, "index.html"))
