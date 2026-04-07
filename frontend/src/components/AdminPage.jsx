@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
 
@@ -75,22 +76,38 @@ export default function AdminPage() {
           <div style={{ color: 'white', fontWeight: 800, fontSize: '1.1rem', letterSpacing: '0.06em' }}>ZAP</div>
           <div style={{ color: '#94a3b8', fontSize: '0.72rem', fontWeight: 500 }}>ניהול לקוחות</div>
         </div>
-        {!loading && !error && (
-          <div
+        <div style={{ marginRight: 'auto', display: 'flex', alignItems: 'center', gap: 10 }}>
+          {!loading && !error && (
+            <div
+              style={{
+                background: 'rgba(255,102,0,0.15)',
+                color: '#ff8533',
+                border: '1px solid rgba(255,102,0,0.3)',
+                borderRadius: 20,
+                padding: '4px 14px',
+                fontSize: '0.82rem',
+                fontWeight: 700,
+              }}
+            >
+              {customers.length} עסקים
+            </div>
+          )}
+          <Link
+            to="/"
             style={{
-              marginRight: 'auto',
-              background: 'rgba(255,102,0,0.15)',
-              color: '#ff8533',
-              border: '1px solid rgba(255,102,0,0.3)',
+              background: 'rgba(255,255,255,0.08)',
+              color: '#cbd5e1',
+              border: '1px solid rgba(255,255,255,0.12)',
               borderRadius: 20,
               padding: '4px 14px',
               fontSize: '0.82rem',
-              fontWeight: 700,
+              fontWeight: 600,
+              textDecoration: 'none',
             }}
           >
-            {customers.length} עסקים
-          </div>
-        )}
+            התחל שיחה חדשה
+          </Link>
+        </div>
       </header>
 
       {/* Content */}
