@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import { Send } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -225,13 +226,22 @@ export default function ChatBot() {
           </div>
         </div>
 
-        {/* Status */}
-        <div className="flex items-center gap-2 bg-white/5 rounded-full px-3 py-1.5 border border-white/10">
-          <span
-            className="status-dot w-2 h-2 rounded-full bg-emerald-400"
-            style={{ boxShadow: '0 0 6px rgba(52,211,153,0.7)' }}
-          />
-          <span className="text-slate-300 text-[0.72rem] font-medium">מחובר</span>
+        <div className="flex items-center gap-3">
+          {/* Status */}
+          <div className="flex items-center gap-2 bg-white/5 rounded-full px-3 py-1.5 border border-white/10">
+            <span
+              className="status-dot w-2 h-2 rounded-full bg-emerald-400"
+              style={{ boxShadow: '0 0 6px rgba(52,211,153,0.7)' }}
+            />
+            <span className="text-slate-300 text-[0.72rem] font-medium">מחובר</span>
+          </div>
+          {/* Admin link */}
+          <Link
+            to="/admin"
+            className="text-slate-400 text-[0.72rem] font-medium bg-white/5 rounded-full px-3 py-1.5 border border-white/10 hover:text-white hover:bg-white/10 transition-colors"
+          >
+            Admin
+          </Link>
         </div>
       </header>
 
