@@ -35,15 +35,9 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Zap Onboarding Bot", lifespan=lifespan)
 
-origins = ["http://localhost:5173", "http://127.0.0.1:5173"]
-frontend_url = os.environ.get("FRONTEND_URL")
-if frontend_url:
-    origins.append(frontend_url)
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
