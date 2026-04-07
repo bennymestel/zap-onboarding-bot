@@ -11,7 +11,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from database import init_db, save_customer, get_all_customers, delete_customer
-from gemini import chat_with_gemini, extract_json_block, strip_json_block
+from gemini import generate_closing_message
 
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", ".env"))
 
@@ -22,8 +22,20 @@ logging.basicConfig(
 )
 log = logging.getLogger("zap")
 
-# session_id -> list of {"role": "user"|"model", "text": str}
-sessions: dict[str, list[dict]] = {}
+# Questions asked in order
+QUESTIONS = [
+    "איך קוראים לעסק שלך?",
+    "מה מספר הטלפון של העסק?",
+    "מה כתובת האימייל של העסק?",
+    "מה הכתובת של העסק? (רחוב ועיר)",
+    "באיזה קטגוריה העסק שלך? (לדוגמה: טכנאי מזגנים, חשמלאי)",
+    "מה 3–5 השירותים העיקריים שאתה מציע?",
+]
+
+FIELD_KEYS = ["business_name", "phone", "email", "address", "category", "services"]
+
+# session_id -> {"step": int, "data": dict}
+sessions: dict[str, dict] = {}
 
 
 @asynccontextmanager
@@ -62,54 +74,57 @@ async def chat(req: ChatRequest):
     if not req.message.strip():
         raise HTTPException(status_code=400, detail="Message cannot be empty")
 
-    history = sessions.setdefault(req.session_id, [])
+    session = sessions.setdefault(req.session_id, {"step": 0, "data": {}})
+    step = session["step"]
 
-    # Prime history with the welcome message the frontend already displayed,
-    # so Gemini knows the greeting happened and doesn't repeat it.
-    if not history:
-        history.append({
-            "role": "model",
-            "text": "שלום וברוכים הבאים לזאפ! אני כאן כדי לעזור לך להצטרף לפלטפורמה שלנו. איך קוראים לעסק שלך?",
-        })
-
-    turn = len(history) // 2 + 1
-    log.info("[%s] turn %d — user: %r", req.session_id[:8], turn, req.message.strip()[:80])
-
-    history.append({"role": "user", "text": req.message.strip()})
-
-    log.info("[%s] calling Gemini (%d messages in history)...", req.session_id[:8], len(history))
-    try:
-        raw_reply = await chat_with_gemini(history)
-    except Exception as e:
-        history.pop()
-        log.error("[%s] Gemini error: %s", req.session_id[:8], e)
-        raise HTTPException(status_code=502, detail=f"Gemini API error: {str(e)}")
-
-    log.info("[%s] Gemini replied (%d chars)", req.session_id[:8], len(raw_reply))
-    history.append({"role": "model", "text": raw_reply})
-
-    customer_data = extract_json_block(raw_reply)
-    onboarding_complete = False
-    saved_customer = None
-
-    if customer_data:
-        log.info("[%s] JSON block detected — saving customer: %s", req.session_id[:8], customer_data.get("business_name"))
-        try:
-            saved_customer = await save_customer(customer_data)
-            log.info("[%s] customer saved to DB", req.session_id[:8])
-        except Exception as e:
-            log.error("[%s] DB save failed: %s", req.session_id[:8], e)
-        display_reply = strip_json_block(raw_reply)
-        onboarding_complete = True
+    # Save the answer to the current question
+    value = req.message.strip()
+    key = FIELD_KEYS[step]
+    if key == "services":
+        # Split comma or newline separated services into a list
+        session["data"][key] = [s.strip() for s in value.replace("\n", ",").split(",") if s.strip()]
     else:
-        display_reply = raw_reply
+        session["data"][key] = value
+
+    log.info("[%s] step %d/%d — %s: %r", req.session_id[:8], step + 1, len(QUESTIONS), key, value[:60])
+
+    session["step"] = step + 1
+    next_step = session["step"]
+
+    # More questions to ask
+    if next_step < len(QUESTIONS):
+        ack = _ack(step)
+        reply = f"{ack}{QUESTIONS[next_step]}"
+        return ChatResponse(session_id=req.session_id, reply=reply)
+
+    # All answers collected — save and generate closing message
+    log.info("[%s] all fields collected, saving customer", req.session_id[:8])
+    try:
+        saved_customer = await save_customer(session["data"])
+    except Exception as e:
+        log.error("[%s] DB save failed: %s", req.session_id[:8], e)
+        raise HTTPException(status_code=500, detail="Failed to save customer")
+
+    try:
+        closing = await generate_closing_message(session["data"])
+    except Exception as e:
+        log.error("[%s] Gemini closing message failed: %s", req.session_id[:8], e)
+        closing = f"תודה רבה! פרטי העסק {session['data'].get('business_name', '')} נשמרו בהצלחה. צוות זאפ יצור איתך קשר תוך 24 שעות."
+
+    del sessions[req.session_id]
 
     return ChatResponse(
         session_id=req.session_id,
-        reply=display_reply,
-        onboarding_complete=onboarding_complete,
+        reply=closing,
+        onboarding_complete=True,
         customer=saved_customer,
     )
+
+
+def _ack(step: int) -> str:
+    """Short acknowledgement before the next question."""
+    acks = ["תודה! ", "מעולה! ", "מצוין! ", "תודה רבה! ", "נהדר! ", ""]
+    return acks[step % len(acks)]
 
 
 @app.get("/admin/customers")
