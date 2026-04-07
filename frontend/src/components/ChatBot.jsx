@@ -240,7 +240,7 @@ export default function ChatBot() {
             to="/admin"
             className="text-slate-400 text-[0.72rem] font-medium bg-white/5 rounded-full px-3 py-1.5 border border-white/10 hover:text-white hover:bg-white/10 transition-colors"
           >
-            Admin
+            ניהול חברות קיימות
           </Link>
         </div>
       </header>
