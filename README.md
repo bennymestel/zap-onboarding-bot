@@ -5,6 +5,11 @@ A Hebrew RTL chatbot that onboards new businesses onto the Zap Group platform th
 **Live demo:** https://zap-onboarding-bot.onrender.com
 > First load may take ~30 seconds.
 
+## Demo
+
+<!-- Upload zap_demo_video.mp4 to a GitHub issue comment, copy the generated URL, and paste it below -->
+https://github.com/user-attachments/assets/YOUR_VIDEO_URL_HERE
+
 ---
 
 ## Tech Stack
