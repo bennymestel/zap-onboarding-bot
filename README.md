@@ -7,6 +7,7 @@ A Hebrew RTL chatbot that onboards new businesses onto the Zap Group platform th
 
 ## Demo
 
+https://github.com/user-attachments/assets/43b3ca76-d5a5-4108-b25f-dc86f15e9c81
 
 ---
 
