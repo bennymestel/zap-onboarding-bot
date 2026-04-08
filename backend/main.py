@@ -127,6 +127,12 @@ def _ack(step: int) -> str:
     return acks[step % len(acks)]
 
 
+@app.delete("/session/{session_id}")
+async def delete_session(session_id: str):
+    sessions.pop(session_id, None)
+    return {"ok": True}
+
+
 @app.get("/admin/customers")
 async def admin_list_customers():
     customers = await get_all_customers()

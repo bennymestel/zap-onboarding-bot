@@ -175,7 +175,16 @@ export default function ChatBot() {
     }
   }
 
-  function startNewChat() {
+  async function startNewChat() {
+    const inProgress = !complete && messages.length > 1
+    if (inProgress) {
+      const confirmed = window.confirm('השיחה הנוכחית תימחק ולא תישמר. להתחיל שיחה חדשה?')
+      if (!confirmed) return
+      // Discard the in-progress session on the server
+      try {
+        await fetch(`${API_BASE}/session/${sessionId}`, { method: 'DELETE' })
+      } catch (_) {}
+    }
     const newId = uuidv4()
     sessionStorage.setItem(SESSION_KEY, newId)
     setSessionId(newId)
@@ -235,6 +244,14 @@ export default function ChatBot() {
             />
             <span className="text-slate-300 text-[0.72rem] font-medium">מחובר</span>
           </div>
+          {/* New chat button */}
+          <button
+            onClick={startNewChat}
+            className="text-slate-400 text-[0.72rem] font-medium bg-white/5 rounded-full px-3 py-1.5 border border-white/10 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            style={{ background: 'transparent', outline: 'none' }}
+          >
+            שיחה חדשה
+          </button>
           {/* Admin link */}
           <Link
             to="/admin"
