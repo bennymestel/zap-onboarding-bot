@@ -7,8 +7,6 @@ A Hebrew RTL chatbot that onboards new businesses onto the Zap Group platform th
 
 ## Demo
 
-<!-- Upload zap_demo_video.mp4 to a GitHub issue comment, copy the generated URL, and paste it below -->
-https://github.com/user-attachments/assets/YOUR_VIDEO_URL_HERE
 
 ---
 
