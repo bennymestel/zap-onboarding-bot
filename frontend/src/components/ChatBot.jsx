@@ -176,11 +176,7 @@ export default function ChatBot() {
   }
 
   async function startNewChat() {
-    const inProgress = !complete && messages.length > 1
-    if (inProgress) {
-      const confirmed = window.confirm('השיחה הנוכחית תימחק ולא תישמר. להתחיל שיחה חדשה?')
-      if (!confirmed) return
-      // Discard the in-progress session on the server
+    if (!complete && messages.length > 1) {
       try {
         await fetch(`${API_BASE}/session/${sessionId}`, { method: 'DELETE' })
       } catch (_) {}
